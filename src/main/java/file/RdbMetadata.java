@@ -1,0 +1,32 @@
+package file;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+
+public class RdbMetadata {
+
+    private final Map<String, Object> auxiliaryFields = new HashMap<>();
+    private final Map<String, String> storage = new HashMap<>();
+
+    public void appendAuxiliaryFiled(String keyName, Object value) {
+        auxiliaryFields.put(keyName, value);
+    }
+
+    public Map<String, Object> getAuxiliaryFields(){
+        return auxiliaryFields;
+    }
+
+    public void appendStorage(String key, String value) {
+        storage.put(key, value);
+    }
+
+    public Map<String, String> getStorage(){
+        return storage;
+    }
+    // head
+     // metadata
+     // database
+     // end of file section
+
+}
