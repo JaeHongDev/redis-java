@@ -1,6 +1,7 @@
 package server;
 
 import java.time.Instant;
+import java.time.ZoneId;
 
 public class Value {
     private final String value;
@@ -17,6 +18,16 @@ public class Value {
 
         v.state = State.NONE;
 
+        return v;
+    }
+
+    public static Value create(String value, Instant milliSeconds) {
+        var v = new Value(value);
+
+        v.state = State.EXPIRE;
+        v.expiredAt = milliSeconds;
+        var koreaTime = v.expiredAt.atZone(ZoneId.of("Asia/Seoul"));
+        System.out.println(koreaTime);  // 2022-01-01T09:00+09:00[Asia/Seoul]
         return v;
     }
 

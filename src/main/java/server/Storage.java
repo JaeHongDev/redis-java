@@ -9,7 +9,7 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 
 public class Storage {
-    private final Map<String, Value> map = new HashMap<>();
+    private Map<String, Value> map = new HashMap<>();
 
     private static final Storage storage = new Storage();
 
@@ -37,5 +37,9 @@ public class Storage {
                 .stream().filter(value -> pattern.matcher(value).matches())
                 .map(Value::create)
                 .toList();
+    }
+
+    public void init(Map<String, Value> storage) {
+        this.map = storage;
     }
 }

@@ -4,6 +4,7 @@ public class Rdb {
 
     //@formatter:off
     public static final byte AUXILIARY_FIELD         = (byte) 0xFA;
+    public static final byte INFORMATION_FOLLOWS     = (byte) 0xFB;
     public static final byte EOF                     = (byte) 0xFF;
     public static final byte DB_SUBSECTION           = (byte) 0xFE;
     public static final byte TYPE                    = (byte) 0x00;
