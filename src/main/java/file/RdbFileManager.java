@@ -10,7 +10,6 @@ import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.time.Instant;
 import server.RedisConfig;
-import server.Storage;
 import util.Printer;
 import util.RedisRdbInputStream;
 

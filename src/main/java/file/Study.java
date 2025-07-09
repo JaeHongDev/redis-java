@@ -1,7 +1,6 @@
 package file;
 
 import server.RedisConfig;
-import server.Storage;
 
 public class Study {
 
