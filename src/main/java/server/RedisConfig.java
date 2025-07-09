@@ -1,7 +1,6 @@
 package server;
 
 import java.io.File;
-import java.nio.file.Path;
 
 // singleton object
 public class RedisConfig {
@@ -12,23 +11,32 @@ public class RedisConfig {
     public String dir = "/tmp/redis-data";
     public String dbFileName = "rdbfile";
 
-    private RedisConfig(){}
+    private RedisConfig() {
+    }
 
-    public void init(String...args){
+    public static RedisConfig create(String[] args) {
+        var redisConfig = new RedisConfig();
+
+        redisConfig.init(args);
+
+        return redisConfig;
+    }
+
+    public void init(String... args) {
         var size = args.length;
         var index = 0;
 
-        while(index < size) {
+        while (index < size) {
             if (args[index].startsWith("--")) {
                 var option = args[index].substring(2);
-                var value = args[index+1];
+                var value = args[index + 1];
 
-                switch(option) {
+                switch (option) {
                     case "port" -> port = Integer.parseInt(value);
                     case "dir" -> dir = value;
                     case "dbfilename" -> dbFileName = value;
                 }
-                index +=2;
+                index += 2;
             }
             // ignore
             else {
@@ -37,10 +45,11 @@ public class RedisConfig {
         }
     }
 
-    public static RedisConfig getInstance(){
+    public static RedisConfig getInstance() {
         return INSTANCE;
     }
-    public File getRdbFile(){
+
+    public File getRdbFile() {
         return new File(dir + "/" + dbFileName);
     }
 }

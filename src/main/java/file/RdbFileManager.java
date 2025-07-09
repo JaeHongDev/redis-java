@@ -16,42 +16,33 @@ import util.RedisRdbInputStream;
 
 public class RdbFileManager {
     private final RedisConfig redisConfig;
-    private final Storage storage;
 
-    private int keyCount;
-    private int expireKeyCount;
-    private int indexCount;
-
-    public RdbFileManager(RedisConfig redisConfig, Storage storage) {
+    public RdbFileManager(RedisConfig redisConfig) {
         this.redisConfig = redisConfig;
-        this.storage = storage;
     }
 
-    public void init() {
+    public static RdbMetadata init(RedisConfig redisConfig) {
         var file = redisConfig.getRdbFile();
 
         if (!file.exists()) {
             createRdbFile(file);
         }
 
-        readRdbFile(file);
+        return readRdbFile(file);
     }
 
-    private void readRdbFile(File file) {
-
-        try (var rdbInputStream = new RedisRdbInputStream(new FileInputStream(redisConfig.getRdbFile()))) {
+    private static RdbMetadata readRdbFile(File file) {
+        try (var rdbInputStream = new RedisRdbInputStream(new FileInputStream(file))) {
             var metadata = new RdbMetadata();
             var PREFIX = rdbInputStream.readString(9);
-            var initializedRdbMedata = process(rdbInputStream, metadata);
-            System.out.println(initializedRdbMedata.getStorage());
 
-            storage.init(initializedRdbMedata.getStorage());
+            return process(rdbInputStream, metadata);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private RdbMetadata process(RedisRdbInputStream rdbInputStream, RdbMetadata metadata) throws IOException {
+    private static RdbMetadata process(RedisRdbInputStream rdbInputStream, RdbMetadata metadata) throws IOException {
         var flag = rdbInputStream.readByte();
         Printer.byteArrayToHex(new byte[]{flag});
         switch (flag) {
@@ -82,14 +73,14 @@ public class RdbFileManager {
         return metadata;
     }
 
-    private void processInformationFollows(RedisRdbInputStream rdbInputStream, RdbMetadata metadata)
+    private static void processInformationFollows(RedisRdbInputStream rdbInputStream, RdbMetadata metadata)
             throws IOException {
         metadata.setKeySize(rdbInputStream.readInt8(ByteOrder.BIG_ENDIAN));
         metadata.setExpireKeySize(rdbInputStream.readInt8(ByteOrder.BIG_ENDIAN));
         process(rdbInputStream, metadata);
     }
 
-    private void processKeyExpireMilliseconds(RedisRdbInputStream rdbInputStream, RdbMetadata metadata)
+    private static void processKeyExpireMilliseconds(RedisRdbInputStream rdbInputStream, RdbMetadata metadata)
             throws IOException {
         var timestamp = rdbInputStream.readInt64(ByteOrder.LITTLE_ENDIAN);
         Printer.print("timestamp: " + timestamp);
@@ -105,12 +96,12 @@ public class RdbFileManager {
         process(rdbInputStream, metadata);
     }
 
-    private void processDbSubSection(RedisRdbInputStream rdbInputStream, RdbMetadata metadata) throws IOException {
+    private static void processDbSubSection(RedisRdbInputStream rdbInputStream, RdbMetadata metadata) throws IOException {
         metadata.setIndexSize(rdbInputStream.readInt8(ByteOrder.BIG_ENDIAN));
         process(rdbInputStream, metadata);
     }
 
-    private void processAuxiliaryField(RedisRdbInputStream rdbInputStream, RdbMetadata rdbMetadata) throws IOException {
+    private static void processAuxiliaryField(RedisRdbInputStream rdbInputStream, RdbMetadata rdbMetadata) throws IOException {
         var keySize = rdbInputStream.readByte();
         var keyName = rdbInputStream.readString(keySize);
 

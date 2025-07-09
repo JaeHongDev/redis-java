@@ -16,8 +16,6 @@ public class RedisOutputStream implements AutoCloseable {
     }
 
     public void write(ResultSet resultSet) throws IOException {
-        System.out.println("result: " + resultSet.getValues());
-
         if (resultSet.getSize() >= 2) {
             outputStream.write(writeLine("*" + resultSet.getSize()));
         }
@@ -36,7 +34,6 @@ public class RedisOutputStream implements AutoCloseable {
                 }
                 case ArrayResult arrayResult -> {
                     outputStream.write(writeLine("*" + arrayResult.values().size()));
-                    System.out.println(arrayResult.values());
                     for (var singleResult : arrayResult.values()) {
                         if (singleResult == null) {
                             outputStream.write(writeLine("$-1"));

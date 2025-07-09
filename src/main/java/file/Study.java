@@ -11,9 +11,6 @@ public class Study {
                 "--dbfilename", "dump.rdb"
         );
 
-        var storage = new Storage();
-        var rdbFileManager = new RdbFileManager(RedisConfig.getInstance(), storage);
-
-        rdbFileManager.init();
+        RdbFileManager.init(RedisConfig.getInstance());
     }
 }
