@@ -1,12 +1,9 @@
 package server;
 
-import static common.Protocol.ASTERISK_BYTE;
-import static common.Protocol.DOLLAR_BYTE;
-
 import exception.RedisException;
 import java.net.Socket;
-import java.util.ArrayList;
 import java.util.List;
+import server.handler.HandlerMap;
 import util.RedisInputStream;
 import util.RedisOutputStream;
 
@@ -22,37 +19,19 @@ public class Connection extends Thread {
         this.storage = storage;
     }
 
-    private Object process(RedisInputStream redisInputStream) {
-        var readByte = redisInputStream.readByte();
-
-        return switch (readByte) {
-            // bulk process
-            case ASTERISK_BYTE -> processBulkString(redisInputStream);
-            case DOLLAR_BYTE -> processString(redisInputStream);
-            default -> throw new IllegalStateException("Unexpected value: " + readByte);
-        };
-    }
-
-    private Object processString(RedisInputStream in) {
-        in.readIntCrLf();
-        return in.readLine();
-    }
-
-    private ArrayList<Object> processBulkString(RedisInputStream in) {
-        var size = in.readIntCrLf();
-        var ret = new ArrayList<Object>();
-        for (int i = 0; i < size; i++) {
-            ret.add(process(in));
-        }
-        return ret;
-    }
 
     @SuppressWarnings("unchecked")
     private ResultSet execute(Object r) {
         if (r instanceof List<?>) {
-            var commands = (List<String>) r;
+            var commands = new Commands((List<String>) r);
+            ResultSet resultSet = new ResultSet();
+            while (commands.isRemaining()) {
+                var command = Command.from(commands.poll());
+                var handler = HandlerMap.get(command);
 
-            return new CommandRunner(commands, storage, redisConfig).process();
+                resultSet.add(handler.handle(redisConfig, storage, commands));
+            }
+            return resultSet;
         }
         // catch
         return null;
@@ -62,18 +41,18 @@ public class Connection extends Thread {
     public void run() {
         try (var redisInputStream = new RedisInputStream(clientSocket.getInputStream());
              var redisOutputStream = new RedisOutputStream(clientSocket.getOutputStream())) {
-            while (true) {
-                var commands = process(redisInputStream);
-                try{
+            // TODO connection closer 추가하기
+
+            while (clientSocket.isConnected()) {
+                var commands = ConnectionProtocolParser.process(redisInputStream);
+                try {
                     var resultSet = execute(commands);
                     redisOutputStream.write(resultSet);
-                }catch (RedisException e) {
+                } catch (RedisException e) {
                     redisOutputStream.write(e);
                 }
             }
-        }
-
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }

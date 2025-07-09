@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import result.ArrayResult;
 import result.Result;
 import util.PatternMatcher;
@@ -13,13 +15,12 @@ import result.SingleResult;
 
 public class CommandRunner {
 
+    private static final Logger log = LoggerFactory.getLogger(CommandRunner.class);
     private final List<String> commands;
     private final Storage storage;
     private final RedisConfig redisConfig;
     private int offset;
     private int limit;
-
-
 
     public CommandRunner(List<String> commands, Storage storage, RedisConfig redisConfig) {
         this.commands = commands;
@@ -31,7 +32,8 @@ public class CommandRunner {
 
     public ResultSet process(){
         List<Result> results = new ArrayList<>();
-        System.out.println(commands);
+        log.debug("command list {}", commands);
+
         while(offset < limit) {
             var command = commands.get(offset++).toLowerCase();
 
@@ -94,7 +96,6 @@ public class CommandRunner {
                     }else{
                         results.add(new SingleResult(storage.get(arg)));
                     }
-
                 }
             }
         }

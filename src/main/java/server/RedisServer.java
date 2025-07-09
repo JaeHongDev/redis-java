@@ -17,8 +17,7 @@ public class RedisServer {
     }
 
     private static void run(RedisConfig redisConfig, RdbMetadata metadata) {
-        run(new MultiThreadRedisServer(redisConfig, new Storage(metadata.getStorage())));
-    }
+        run(new MultiThreadRedisServer(redisConfig, new Storage(metadata.getStorage()))); }
 
     private static void run(RedisServerListener listener) {
         log.debug("redis server run");

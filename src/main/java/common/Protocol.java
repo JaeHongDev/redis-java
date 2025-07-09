@@ -8,7 +8,4 @@ public class Protocol {
     public static final byte PLUS_BYTE = '+';
     public static final byte MINUS_BYTE = '-';
     public static final byte COLON_BYTE = ':';
-
-
-
 }
