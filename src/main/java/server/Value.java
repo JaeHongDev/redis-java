@@ -40,4 +40,14 @@ public class Value {
     enum State {
         EXPIRE, NONE
     }
+
+    @Override
+    public String toString() {
+        return "Value{" +
+                "value='" + value + '\'' +
+                ", state=" + state +
+                ", createdAt=" + createdAt +
+                ", expiredAt=" + expiredAt +
+                '}';
+    }
 }

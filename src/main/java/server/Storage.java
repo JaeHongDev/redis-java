@@ -32,9 +32,10 @@ public class Storage {
     }
 
     public List<Value> findKey(Pattern pattern) {
-        return map.entrySet()
-                .stream().filter(entry -> pattern.matcher(entry.getKey()).matches())
-                .map(Entry::getValue)
+        System.out.println(map.keySet());
+        return map.keySet()
+                .stream().filter(value -> pattern.matcher(value).matches())
+                .map(Value::create)
                 .toList();
     }
 }

@@ -72,12 +72,13 @@ public class RdbFileManager {
         var keyType = rdbInputStream.readByte();
 
         for (int i = 0; i < size; i++) {
-            var keySize = rdbInputStream.readInt8(ByteOrder.BIG_ENDIAN);
+            var keySize = rdbInputStream.readInt16(ByteOrder.BIG_ENDIAN);
             var key = rdbInputStream.readString(keySize);
 
             var valueSize = rdbInputStream.readInt8(ByteOrder.BIG_ENDIAN);
             var value = rdbInputStream.readString(valueSize);
 
+            System.out.println("insert: " +  key + " " + value);
             metadata.appendStorage(key, value);
         }
 

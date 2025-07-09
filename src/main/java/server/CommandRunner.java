@@ -1,11 +1,15 @@
 package server;
 
+import exception.RedisException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import result.ArrayResult;
+import result.Result;
 import util.PatternMatcher;
+import result.SingleResult;
 
 public class CommandRunner {
 
@@ -27,13 +31,13 @@ public class CommandRunner {
 
     public ResultSet process(){
         List<Result> results = new ArrayList<>();
-        System.out.println("check");
+        System.out.println(commands);
         while(offset < limit) {
             var command = commands.get(offset++).toLowerCase();
 
             switch (command) {
-                case "ping" -> results.add(new Result("PONG"));
-                case "echo" -> results.add(new Result(commands.get(offset++)));
+                case "ping" -> results.add(new SingleResult("PONG"));
+                case "echo" -> results.add(new SingleResult(commands.get(offset++)));
                 case "set" -> {
                     var key = commands.get(offset++);
                     var value = commands.get(offset++);
@@ -43,17 +47,17 @@ public class CommandRunner {
                             var milliseconds = Integer.parseInt(commands.get(++offset));
                             offset++;
                             storage.put(key, value, milliseconds);
-                            results.add(new Result("OK"));
+                            results.add(new SingleResult("OK"));
                         }
                     } else {
                         storage.put(key, value);
-                        results.add(new Result("OK"));
+                        results.add(new SingleResult("OK"));
                     }
                     System.out.println("check");
                 }
                 case "get" -> {
                     var key = commands.get(offset++);
-                    results.add(new Result(storage.get(key)));
+                    results.add(new SingleResult(storage.get(key)));
                 }
                 case "config" -> {
                     var arg = commands.get(offset++).toLowerCase();
@@ -62,26 +66,33 @@ public class CommandRunner {
                     if(Objects.equals(arg.toLowerCase(), "get")){
 
                         if(Objects.equals(sub, "dir")) {
-                            results.add(new Result(sub));
-                            results.add(new Result(redisConfig.dir));
+                            results.add(new SingleResult(sub));
+                            results.add(new SingleResult(redisConfig.dir));
                         }
                         else if(Objects.equals(sub, "dbfilename")) {
-                            results.add(new Result(sub));
-                            results.add(new Result(redisConfig.dbFileName));
+                            results.add(new SingleResult(sub));
+                            results.add(new SingleResult(redisConfig.dbFileName));
                         }
                         // TODO add
                     }
                 }
                 case "keys" -> {
                     var arg = commands.get(offset++);
+
+                    if(commands.size() > 2) {
+                        throw new RedisException("ERR wrong number of arguments for 'keys' command");
+                    }
                     if(arg.contains("*")) {
                         var regex = PatternMatcher.globToRegex(arg);
                         var result = storage.findKey(regex);
 
+                        System.out.println("search pattern:" + regex);
                         System.out.println(result);
-                        result.forEach(value -> results.add(new Result(value.unwrap())));
+
+                        results.add(new ArrayResult(result.stream().map(Value::unwrap).toList()));
+
                     }else{
-                        results.add(new Result(storage.get(arg)));
+                        results.add(new SingleResult(storage.get(arg)));
                     }
 
                 }

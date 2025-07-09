@@ -3,6 +3,7 @@ package server;
 import static common.Protocol.ASTERISK_BYTE;
 import static common.Protocol.DOLLAR_BYTE;
 
+import exception.RedisException;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
@@ -63,10 +64,16 @@ public class Connection extends Thread {
              var redisOutputStream = new RedisOutputStream(clientSocket.getOutputStream())) {
             while (true) {
                 var commands = process(redisInputStream);
-                var resultSet = execute(commands);
-                redisOutputStream.write(resultSet);
+                try{
+                    var resultSet = execute(commands);
+                    redisOutputStream.write(resultSet);
+                }catch (RedisException e) {
+                    redisOutputStream.write(e);
+                }
             }
-        } catch (Exception e) {
+        }
+
+        catch (Exception e) {
             throw new RuntimeException(e);
         }
     }

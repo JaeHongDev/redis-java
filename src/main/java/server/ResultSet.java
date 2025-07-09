@@ -1,14 +1,16 @@
 package server;
 
 import java.util.List;
+import result.Result;
+
 
 public class ResultSet {
 
-    private final List<Result> values;
+    private final List<result.Result> values;
     private final int size;
     private int offset;
 
-    public ResultSet(List<Result> values) {
+    public ResultSet(List<result.Result> values) {
         this.values = values;
         this.size = values.size();
         this.offset = 0;
