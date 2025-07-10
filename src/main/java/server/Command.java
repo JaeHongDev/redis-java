@@ -3,7 +3,7 @@ package server;
 import java.util.Arrays;
 
 public enum Command {
-    PING, ECHO, SET, GET, CONFIG, KEYS;
+    PING, ECHO, SET, GET, CONFIG, KEYS, INFO, REPLCONF, PSYNC;
 
     public static Command from(String command) {
         final var upperCommand = command.toUpperCase();

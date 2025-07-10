@@ -63,4 +63,20 @@ public class RedisOutputStream implements AutoCloseable {
         outputStream.write(writeLine("-" + e.getMessage()));
     }
 
+    public void sendCommand(String... args) throws IOException {
+        write("*" + args.length);
+        for (String arg : args) {
+            write("$" + arg.length());
+            write(arg);
+        }
+        outputStream.flush();
+    }
+
+    private void flush() throws IOException {
+        outputStream.flush();
+    }
+
+    private void write(String input) throws IOException {
+        outputStream.write(writeLine(input));
+    }
 }

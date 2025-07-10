@@ -13,6 +13,9 @@ public class HandlerMap {
         this.put(Command.GET, new GetHandler());
         this.put(Command.CONFIG, new ConfigHandler());
         this.put(Command.KEYS, new KeysHandler());
+        this.put(Command.INFO, new InfoHandler());
+        this.put(Command.REPLCONF, new ReplConfHandler());
+        this.put(Command.PSYNC, new PSyncHandler());
     }};
 
     public static Handler get(Command command) {

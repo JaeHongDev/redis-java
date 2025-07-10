@@ -6,7 +6,9 @@ import static common.Protocol.DOLLAR_BYTE;
 import static common.Protocol.MINUS_BYTE;
 import static common.Protocol.PLUS_BYTE;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import util.Printer;
 import util.RedisInputStream;
 
 public class ConnectionProtocolParser {
@@ -16,7 +18,8 @@ public class ConnectionProtocolParser {
         return switch (readByte) {
             case ASTERISK_BYTE -> processBulkString(redisInputStream);
             case DOLLAR_BYTE -> processString(redisInputStream);
-            case PLUS_BYTE, MINUS_BYTE, COLON_BYTE -> throw new UnsupportedOperationException();
+            case PLUS_BYTE -> redisInputStream.readLine();
+            case MINUS_BYTE, COLON_BYTE -> throw new UnsupportedOperationException();
             default -> throw new IllegalStateException("Unexpected value: " + readByte);
         };
     }

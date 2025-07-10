@@ -2,6 +2,7 @@ package server;
 
 import java.util.List;
 
+// command args refactoring
 public class Commands {
 
     private final List<String> inputs;

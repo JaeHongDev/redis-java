@@ -24,9 +24,11 @@
     - [ ] 기타 
 
 ## 레플리카 구현 
-
 - [ ] INFO 명령어 구현
-
+- [ ] Replica id 생성 기능 구현
+- [ ] Replica handshake
+    - [x] client handshake
+    - [ ] server handshake
 
 ## 레플리카 구현 전 단계
 

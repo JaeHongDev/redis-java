@@ -11,6 +11,23 @@ public class RedisConfig {
     public String dir = "/tmp/redis-data";
     public String dbFileName = "rdbfile";
 
+
+    // replica options
+    // @formatter:off
+    public String role                       = "master"; // default
+    public int    connectedSlaves            = 0;
+    public String masterReplId               = "8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb";
+    public int    masterReplOffset           = 0;
+    public int    secondReplOffset           = -1;
+    public int    replBacklogActive          = 0;
+    public int    replBacklogSize            = 1048576;
+    public int    replBacklogFirstByteOffset = 0;
+    public int    replBacklogHistlen         = 0;
+    // @formatter:on
+
+    public String masterHost;
+    public int masterPort;
+
     private RedisConfig() {
     }
 
@@ -35,6 +52,7 @@ public class RedisConfig {
                     case "port" -> port = Integer.parseInt(value);
                     case "dir" -> dir = value;
                     case "dbfilename" -> dbFileName = value;
+                    case "replicaof" -> setReplica(value);
                 }
                 index += 2;
             }
@@ -43,6 +61,15 @@ public class RedisConfig {
                 index++;
             }
         }
+    }
+
+    private void setReplica(String value) {
+        // <host> <port>
+        this.role = "slave";
+
+        var split = value.split(" ");
+        this.masterHost = split[0];
+        this.masterPort = Integer.parseInt(split[1]);
     }
 
     public static RedisConfig getInstance() {
