@@ -79,4 +79,24 @@ public class RedisConfig {
     public File getRdbFile() {
         return new File(dir + "/" + dbFileName);
     }
+
+    @Override
+    public String toString() {
+        return "RedisConfig{" +
+                "port=" + port +
+                ", dir='" + dir + '\'' +
+                ", dbFileName='" + dbFileName + '\'' +
+                ", role='" + role + '\'' +
+                ", connectedSlaves=" + connectedSlaves +
+                ", masterReplId='" + masterReplId + '\'' +
+                ", masterReplOffset=" + masterReplOffset +
+                ", secondReplOffset=" + secondReplOffset +
+                ", replBacklogActive=" + replBacklogActive +
+                ", replBacklogSize=" + replBacklogSize +
+                ", replBacklogFirstByteOffset=" + replBacklogFirstByteOffset +
+                ", replBacklogHistlen=" + replBacklogHistlen +
+                ", masterHost='" + masterHost + '\'' +
+                ", masterPort=" + masterPort +
+                '}';
+    }
 }

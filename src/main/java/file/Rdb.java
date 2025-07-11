@@ -43,4 +43,30 @@ public class Rdb {
         //@formatter:on
 
     }
+
+    public static final byte[] EMPTY_FILE = hexStringToByteArray(
+            "524544495330303131fa0972656469732d76657205372e322e30fa0a72656469732d62697473c040fa056374696d65c26d08bc65fa08757365642d6d656dc2b0c41000fa08616f662d62617365c000fff06e3bfec0ff5aa2");
+
+
+    public static byte[] hexStringToByteArray(String s) {
+        if (s.length() % 2 != 0) {
+            throw new IllegalArgumentException("Hex 문자열 길이는 짝수여야 함");
+        }
+
+        int len = s.length();
+        byte[] data = new byte[len / 2];
+
+        for (int i = 0; i < len; i += 2) {
+            int high = Character.digit(s.charAt(i), 16);
+            int low = Character.digit(s.charAt(i + 1), 16);
+
+            if (high == -1 || low == -1) {
+                throw new IllegalArgumentException("유효하지 않은 hex 문자: " + s.substring(i, i + 2));
+            }
+
+            data[i / 2] = (byte) ((high << 4) + low);
+        }
+
+        return data;
+    }
 }

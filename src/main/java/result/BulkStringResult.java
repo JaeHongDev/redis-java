@@ -12,7 +12,7 @@ public class BulkStringResult extends Result {
         this.results = Arrays.stream(strings).map(SingleResult::new).toList();
     }
 
-    public Collection<? extends Result> getResults() {
+    public Collection<? extends SingleResult> getResults() {
         return results;
     }
 }

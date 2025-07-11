@@ -5,12 +5,11 @@ import file.RdbMetadata;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import util.Printer;
 import util.RedisInputStream;
 import util.RedisOutputStream;
 
@@ -22,20 +21,20 @@ public class RedisServer {
     }
 
     private static void run(RedisConfig redisConfig) {
+        if (Objects.equals(redisConfig.role, "slave")) {
+            run(redisConfig, handShake(redisConfig));
+            return;
+        }
         run(redisConfig, initializeMetadata(redisConfig));
     }
 
     private static void run(RedisConfig redisConfig, RdbMetadata metadata) {
-        handShake(redisConfig);
         run(new MultiThreadRedisServer(redisConfig, new Storage(metadata.getStorage())));
     }
 
     // TODO 이거 이름 바꿔야 할듯..?
-    private static void handShake(RedisConfig redisConfig) {
-        if (Objects.equals(redisConfig.role, "master")) {
-            return;
-        }
-
+    private static RdbMetadata handShake(RedisConfig redisConfig) {
+        System.out.println(redisConfig);
         try (Socket socket = new Socket(redisConfig.masterHost, redisConfig.masterPort);
              var in = new RedisInputStream(socket.getInputStream());
              var out = new RedisOutputStream(socket.getOutputStream())
@@ -52,6 +51,7 @@ public class RedisServer {
             out.sendCommand("PSYNC", "?", "-1");
             printResponse(in);
 
+            return RdbFileManager.init(in);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

@@ -3,6 +3,7 @@ package server;
 import exception.RedisException;
 import java.net.Socket;
 import java.util.List;
+import result.Result;
 import server.handler.HandlerMap;
 import util.RedisInputStream;
 import util.RedisOutputStream;
@@ -20,20 +21,34 @@ public class Connection extends Thread {
     }
 
 
+//    @SuppressWarnings("unchecked")
+//    private ResultSet execute(Object r) {
+//        if (r instanceof List<?>) {
+//            var commands = new Commands((List<String>) r);
+//            ResultSet resultSet = new ResultSet();
+//            while (commands.isRemaining()) {
+//                var command = Command.from(commands.poll());
+//                var handler = HandlerMap.get(command);
+//
+//                resultSet.add(handler.handle(redisConfig, storage, commands));
+//            }
+//            return resultSet;
+//        }
+//        // catch
+//        return null;
+//    }
+
     @SuppressWarnings("unchecked")
-    private ResultSet execute(Object r) {
-        if (r instanceof List<?>) {
+    private Result execute(Object args){
+        if (args instanceof List<?> r) {
             var commands = new Commands((List<String>) r);
-            ResultSet resultSet = new ResultSet();
-            while (commands.isRemaining()) {
+            if (commands.isRemaining()) {
                 var command = Command.from(commands.poll());
                 var handler = HandlerMap.get(command);
 
-                resultSet.add(handler.handle(redisConfig, storage, commands));
+                return handler.handle(redisConfig, storage, commands);
             }
-            return resultSet;
         }
-        // catch
         return null;
     }
 
@@ -46,8 +61,8 @@ public class Connection extends Thread {
             while (clientSocket.isConnected()) {
                 var commands = ConnectionProtocolParser.process(redisInputStream);
                 try {
-                    var resultSet = execute(commands);
-                    redisOutputStream.write(resultSet);
+                    var result = execute(commands);
+                    redisOutputStream.write(result);
                 } catch (RedisException e) {
                     redisOutputStream.write(e);
                 }

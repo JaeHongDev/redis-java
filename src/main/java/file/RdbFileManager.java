@@ -11,6 +11,8 @@ import java.nio.file.StandardOpenOption;
 import java.time.Instant;
 import server.RedisConfig;
 import util.Printer;
+import util.RedisInputStream;
+import util.RedisOutputStream;
 import util.RedisRdbInputStream;
 
 public class RdbFileManager {
@@ -29,6 +31,9 @@ public class RdbFileManager {
 
         return readRdbFile(file);
     }
+    public static RdbMetadata init(RedisInputStream redisInputStream) {
+        return new RdbMetadata();
+    }
 
     private static RdbMetadata readRdbFile(File file) {
         try (var rdbInputStream = new RedisRdbInputStream(new FileInputStream(file))) {
@@ -40,6 +45,7 @@ public class RdbFileManager {
             throw new RuntimeException(e);
         }
     }
+
 
     private static RdbMetadata process(RedisRdbInputStream rdbInputStream, RdbMetadata metadata) throws IOException {
         var flag = rdbInputStream.readByte();
