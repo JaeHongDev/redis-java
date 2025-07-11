@@ -28,7 +28,8 @@
 - [ ] Replica id 생성 기능 구현
 - [ ] Replica handshake
     - [x] client handshake
-    - [ ] server handshake
+    - [x] server handshake
+- [ ] replica connection 연결 유지하기
 
 ## 레플리카 구현 전 단계
 
