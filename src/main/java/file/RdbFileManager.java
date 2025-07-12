@@ -12,15 +12,9 @@ import java.time.Instant;
 import server.RedisConfig;
 import util.Printer;
 import util.RedisInputStream;
-import util.RedisOutputStream;
 import util.RedisRdbInputStream;
 
 public class RdbFileManager {
-    private final RedisConfig redisConfig;
-
-    public RdbFileManager(RedisConfig redisConfig) {
-        this.redisConfig = redisConfig;
-    }
 
     public static RdbMetadata init(RedisConfig redisConfig) {
         var file = redisConfig.getRdbFile();
@@ -31,19 +25,23 @@ public class RdbFileManager {
 
         return readRdbFile(file);
     }
-    public static RdbMetadata init(RedisInputStream redisInputStream) {
-        return new RdbMetadata();
+    public static RdbMetadata init(RedisInputStream redisInputStream) throws IOException {
+        return readRdbFile(new RedisRdbInputStream(redisInputStream));
     }
 
     private static RdbMetadata readRdbFile(File file) {
         try (var rdbInputStream = new RedisRdbInputStream(new FileInputStream(file))) {
-            var metadata = new RdbMetadata();
-            var PREFIX = rdbInputStream.readString(9);
-
-            return process(rdbInputStream, metadata);
+            return readRdbFile(rdbInputStream);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private static RdbMetadata readRdbFile(RedisRdbInputStream rdbInputStream) throws IOException {
+        var metadata = new RdbMetadata();
+        var PREFIX = rdbInputStream.readString(9);
+
+        return process(rdbInputStream, metadata);
     }
 
 
@@ -88,7 +86,6 @@ public class RdbFileManager {
     private static void processKeyExpireMilliseconds(RedisRdbInputStream rdbInputStream, RdbMetadata metadata)
             throws IOException {
         var timestamp = rdbInputStream.readInt64(ByteOrder.LITTLE_ENDIAN);
-        Printer.print("timestamp: " + timestamp);
         var milliseconds = Instant.ofEpochMilli(timestamp);
         var keySize = rdbInputStream.readInt16(ByteOrder.BIG_ENDIAN);
         var key = rdbInputStream.readString(keySize);
@@ -96,7 +93,6 @@ public class RdbFileManager {
         var valueSize = rdbInputStream.readInt8(ByteOrder.BIG_ENDIAN);
         var value = rdbInputStream.readString(valueSize);
 
-        System.out.println("insert: " + key + " " + value);
         metadata.appendStorage(key, server.Value.create(value, milliseconds));
         process(rdbInputStream, metadata);
     }

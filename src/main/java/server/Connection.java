@@ -3,6 +3,7 @@ package server;
 import exception.RedisException;
 import java.net.Socket;
 import java.util.List;
+import java.util.Objects;
 import result.Result;
 import server.handler.HandlerMap;
 import util.RedisInputStream;
@@ -13,30 +14,14 @@ public class Connection extends Thread {
     private final Socket clientSocket;
     private final RedisConfig redisConfig;
     private final Storage storage;
+    private final ReplicaManager replicaManager;
 
-    public Connection(Socket clientSocket, RedisConfig redisConfig, Storage storage) {
+    public Connection(Socket clientSocket, RedisConfig redisConfig, Storage storage, ReplicaManager replicaManager) {
         this.clientSocket = clientSocket;
         this.redisConfig = redisConfig;
         this.storage = storage;
+        this.replicaManager = replicaManager;
     }
-
-
-//    @SuppressWarnings("unchecked")
-//    private ResultSet execute(Object r) {
-//        if (r instanceof List<?>) {
-//            var commands = new Commands((List<String>) r);
-//            ResultSet resultSet = new ResultSet();
-//            while (commands.isRemaining()) {
-//                var command = Command.from(commands.poll());
-//                var handler = HandlerMap.get(command);
-//
-//                resultSet.add(handler.handle(redisConfig, storage, commands));
-//            }
-//            return resultSet;
-//        }
-//        // catch
-//        return null;
-//    }
 
     @SuppressWarnings("unchecked")
     private Result execute(Object args){
@@ -44,6 +29,7 @@ public class Connection extends Thread {
             var commands = new Commands((List<String>) r);
             if (commands.isRemaining()) {
                 var command = Command.from(commands.poll());
+
                 var handler = HandlerMap.get(command);
 
                 return handler.handle(redisConfig, storage, commands);
