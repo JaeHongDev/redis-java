@@ -22,6 +22,8 @@ public class RedisOutputStream implements AutoCloseable {
         this.outputStream = outputStream;
     }
 
+
+
     public void write(Result result) throws IOException {
         switch (result) {
             case SingleResult singleResult -> {
@@ -42,7 +44,7 @@ public class RedisOutputStream implements AutoCloseable {
             case BulkStringResult bulkStringResult -> {
                 var results = bulkStringResult.getResults();
                 outputStream.write(writeLine("*" + results.size()));
-                for (var singleResult : results){
+                for (var singleResult : results) {
                     if (singleResult == null) {
                         outputStream.write(writeLine("$-1"));
                     } else {
@@ -67,13 +69,14 @@ public class RedisOutputStream implements AutoCloseable {
             case BinaryBulkStringResult binaryBulkStringResult -> {
                 outputStream.write("+".getBytes());
                 outputStream.write(writeLine(binaryBulkStringResult.getSimpleString()));
-                outputStream.write(writeLine("$" +binaryBulkStringResult.getBinary().length));
+                outputStream.write(writeLine("$" + binaryBulkStringResult.getBinary().length));
                 outputStream.write(binaryBulkStringResult.getBinary());
                 outputStream.flush();
             }
             default -> throw new IllegalStateException("Unexpected value: " + result);
         }
     }
+
     public void write(ResultSet resultSet) throws IOException {
         if (resultSet.getSize() >= 2) {
             outputStream.write(writeLine("*" + resultSet.getSize()));
@@ -135,7 +138,7 @@ public class RedisOutputStream implements AutoCloseable {
         outputStream.flush();
     }
 
-    private void write(String input) throws IOException {
+    public void write(String input) throws IOException {
         outputStream.write(writeLine(input));
     }
 }

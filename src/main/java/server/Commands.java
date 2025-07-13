@@ -30,4 +30,8 @@ public class Commands {
     public int size(){
         return limit - offset;
     }
+
+    public List<String> getStrings(){
+        return inputs;
+    }
 }

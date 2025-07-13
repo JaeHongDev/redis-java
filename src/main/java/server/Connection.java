@@ -1,6 +1,7 @@
 package server;
 
 import exception.RedisException;
+import java.io.IOException;
 import java.net.Socket;
 import java.util.List;
 import java.util.Objects;
@@ -16,11 +17,21 @@ public class Connection extends Thread {
     private final Storage storage;
     private final ReplicaManager replicaManager;
 
+    private final RedisInputStream redisInputStream;
+    private final RedisOutputStream redisOutputStream;
+
     public Connection(Socket clientSocket, RedisConfig redisConfig, Storage storage, ReplicaManager replicaManager) {
         this.clientSocket = clientSocket;
         this.redisConfig = redisConfig;
         this.storage = storage;
         this.replicaManager = replicaManager;
+
+        try {
+            this.redisInputStream = new RedisInputStream(clientSocket.getInputStream());
+            this.redisOutputStream = new RedisOutputStream(clientSocket.getOutputStream());
+        }catch (Exception e) {
+            throw new IllegalStateException();
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -29,10 +40,19 @@ public class Connection extends Thread {
             var commands = new Commands((List<String>) r);
             if (commands.isRemaining()) {
                 var command = Command.from(commands.poll());
-
                 var handler = HandlerMap.get(command);
 
-                return handler.handle(redisConfig, storage, commands);
+                var result = handler.handle(redisConfig, storage, commands);
+
+                if(command == Command.PSYNC) {
+                    replicaManager.add(this);
+                }
+
+                if(command == Command.SET) {
+                    replicaManager.propagate(commands);
+                }
+
+                return result;
             }
         }
         return null;
@@ -40,10 +60,7 @@ public class Connection extends Thread {
 
     @Override
     public void run() {
-        try (var redisInputStream = new RedisInputStream(clientSocket.getInputStream());
-             var redisOutputStream = new RedisOutputStream(clientSocket.getOutputStream())) {
-            // TODO connection closer 추가하기
-
+        try {
             while (clientSocket.isConnected()) {
                 var commands = ConnectionProtocolParser.process(redisInputStream);
                 try {
@@ -53,9 +70,19 @@ public class Connection extends Thread {
                     redisOutputStream.write(e);
                 }
             }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        }catch (Exception e) {
+            // ignore
         }
     }
 
+    public void send(Commands commands) throws IOException {
+        var input = commands.getStrings();
+
+        redisOutputStream.write("*" + input.size());
+        for(var c: input){
+            redisOutputStream.write("$" + c.length());
+            redisOutputStream.write(c);
+        }
+
+    }
 }
