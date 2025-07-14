@@ -10,6 +10,12 @@ public class ReplicaManager {
     private final Set<Connection> replicas = new HashSet<>();
 
     public void add(Connection connection) {
+
+        if (replicas.contains(connection)) {
+            return;
+        }
+
+        log.debug("connect new connection");
         replicas.add(connection);
     }
 

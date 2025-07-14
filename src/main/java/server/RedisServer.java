@@ -17,14 +17,14 @@ public class RedisServer {
         if (Objects.equals(redisConfig.role, "slave")) {
             var replicaClient = new ReplicaClient(redisConfig);
             var storage = new Storage(replicaClient.connect().getStorage());
-            run(new MultiThreadRedisServer(redisConfig, storage, new ReplicaManager()));
+            run(new MultiThreadRedisServer(redisConfig, storage));
             return;
         }
         run(redisConfig, initializeMetadata(redisConfig));
     }
 
     private static void run(RedisConfig redisConfig, RdbMetadata metadata) {
-        run(new MultiThreadRedisServer(redisConfig, new Storage(metadata.getStorage())));
+        run(new MultiThreadRedisServer(redisConfig, new Storage(metadata.getStorage()), new ReplicaManager()));
     }
 
     private static void run(RedisServerListener listener) {

@@ -83,6 +83,6 @@ public class Connection extends Thread {
             redisOutputStream.write("$" + c.length());
             redisOutputStream.write(c);
         }
-
+        redisOutputStream.flush();
     }
 }

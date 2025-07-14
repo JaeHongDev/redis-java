@@ -134,7 +134,7 @@ public class RedisOutputStream implements AutoCloseable {
         outputStream.flush();
     }
 
-    private void flush() throws IOException {
+    public void flush() throws IOException {
         outputStream.flush();
     }
 

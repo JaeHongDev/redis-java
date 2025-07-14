@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import result.Result;
 import server.handler.HandlerMap;
+import util.Printer;
 import util.RedisInputStream;
 import util.RedisOutputStream;
 
@@ -44,13 +45,19 @@ public class ReplicaClient {
             printResponse(redisInputStream);
 
             redisOutputStream.sendCommand("PSYNC", "?", "-1");
-            printResponse(redisInputStream);
+
+            // fullresync
+            redisInputStream.readLine();
+            // file size
+            redisInputStream.readLine();
+
+            redisOutputStream.sendCommand("REPLCONF", "getack", "*");
 
             var rdbMetadata = RdbFileManager.init(redisInputStream);
-
             new Thread(() -> processSync(rdbMetadata)).start();
             return rdbMetadata;
         } catch (Exception e) {
+            log.error("{}", e);
             throw new IllegalStateException();
         }
     }
@@ -63,10 +70,11 @@ public class ReplicaClient {
 
     private void processSync(RdbMetadata rdbMetadata) {
         var storage = rdbMetadata.getStorage();
-
+        log.debug("start sync");
         while (socket.isConnected()) {
-            var commands = ConnectionProtocolParser.process(redisInputStream);
             try {
+                var commands = ConnectionProtocolParser.process(redisInputStream);
+                log.debug("sync");
                 var result = execute(commands, new Storage(storage));
                 redisOutputStream.write(result);
             } catch (RedisException e) {
